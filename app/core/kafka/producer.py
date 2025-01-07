@@ -2,16 +2,19 @@ from aiokafka import AIOKafkaProducer
 from app.core import settings
 import asyncio
 
-event_loop = asyncio.get_event_loop()
-
 
 class AIOWebProducer(object):
-    def __init__(self):
+    def __init__(
+            self,
+            produce_topic: settings.kafka.PRODUCE_TOPIC
+                           | settings.kafka.CONSUME_TOPIC
+            = settings.kafka.PRODUCE_TOPIC
+    ):
         self.__producer = AIOKafkaProducer(
             bootstrap_servers=settings.kafka.BROKER,
-            loop=event_loop,
+            loop=asyncio.get_event_loop(),
         )
-        self.__produce_topic = settings.kafka.PRODUCE_TOPIC
+        self.__produce_topic = produce_topic
 
     async def start(self) -> None:
         await self.__producer.start()
@@ -28,7 +31,3 @@ class AIOWebProducer(object):
             )
         finally:
             await self.stop()
-
-
-def get_producer() -> AIOWebProducer:
-    return AIOWebProducer()

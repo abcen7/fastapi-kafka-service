@@ -16,8 +16,15 @@ async def get_all(users_service: Annotated[UsersService, Depends()]):
 
 @router.post("/", status_code=201)
 async def create(
-    users_service: Annotated[UsersService, Depends()], user: UserCreate
+        users_service: Annotated[UsersService, Depends()], user: UserCreate
 ) -> None:
     return await users_service.create(user)
 
-# TODO: create route 
+
+@router.get("/get_user_balance/{user_id}", response_model=float, status_code=200)
+async def get_all_info(
+        user_id: int,
+        users_service: Annotated[UsersService, Depends()]
+):
+    """Kafka route for simulate the operations between microservices"""
+    return await users_service.get_all_info(user_id)

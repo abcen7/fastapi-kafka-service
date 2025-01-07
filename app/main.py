@@ -7,7 +7,7 @@ from app.core.lib import create_default_fastapi_app
 from app.core.router import api_router
 
 load_dotenv()
-app: FastAPI = create_default_fastapi_app(title="FastAPI template service")
+app: FastAPI = create_default_fastapi_app(title="FastAPI kafka template service")
 
 app.include_router(api_router)
 

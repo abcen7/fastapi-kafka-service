@@ -2,18 +2,17 @@ from pydantic import PostgresDsn, computed_field
 from pydantic_core import MultiHostUrl
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from app.core.lib import main_logger
 from app.core.lib.databases import Databases, PostgreSQLDrivers
+from dotenv import load_dotenv
 
 """
 TODO: Please, add the settings of all services right here.
 """
 
+load_dotenv()
 
 class DatabaseSettings(BaseSettings):
-    """
-    For default uses the Postgres
-    """
+    """For default uses the Postgres"""
 
     ECHO_DEBUG_MODE: bool = False
     USED: Databases = Databases.PostgreSQL
@@ -23,7 +22,7 @@ class DatabaseSettings(BaseSettings):
     PASSWORD: str
     NAME: str
 
-    model_config = SettingsConfigDict(env_prefix="DB_", env_file=".env")
+    model_config = SettingsConfigDict(env_prefix="DB_")
 
     @computed_field
     @property
@@ -75,15 +74,11 @@ class DatabaseSettings(BaseSettings):
 
 
 class KafkaSettings(BaseSettings):
-    """
-    For default uses the Postgres
-    """
-
     BROKER: str
     PRODUCE_TOPIC: str
     CONSUME_TOPIC: str
 
-    model_config = SettingsConfigDict(env_prefix="KAFKA_", env_file=".env")
+    model_config = SettingsConfigDict(env_prefix="KAFKA_")
 
 
 class Settings(BaseSettings):

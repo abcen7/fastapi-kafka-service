@@ -1,4 +1,8 @@
-from pydantic import BaseModel
+from decimal import Decimal
+from enum import StrEnum
+from uuid import UUID
+
+from pydantic import BaseModel, field_validator, field_serializer
 
 
 class UserCreate(BaseModel):
@@ -8,6 +12,14 @@ class UserCreate(BaseModel):
     bio: str | None = None
 
 
+# Data structures for Kafka
+
+class CryptoServiceType(StrEnum):
+    ETH = "ETH"
+    BTC = "BTC"
+    IOTA = "IOTA"
+
+
 class UserResponse(BaseModel):
     id: int
     username: str
@@ -15,7 +27,16 @@ class UserResponse(BaseModel):
     last_name: str
     bio: str | None = None
 
-class UserBalanceResponse(BaseModel):
-    pass
-    # TODO: this
 
+class UserDataRequest(BaseModel):
+    correlation_id: UUID
+    user_id: int
+
+    @field_serializer('correlation_id')
+    def serialize_correlation_id(self, correlation_id: UUID, _info):
+        return str(correlation_id)
+
+
+class UserDataResponse(UserDataRequest):
+    produced_by: CryptoServiceType
+    balance: Decimal
