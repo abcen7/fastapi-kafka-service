@@ -14,3 +14,8 @@ class UserResponse(BaseModel):
     first_name: str
     last_name: str
     bio: str | None = None
+
+class UserBalanceResponse(BaseModel):
+    pass
+    # TODO: this
+

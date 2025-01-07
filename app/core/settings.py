@@ -74,8 +74,21 @@ class DatabaseSettings(BaseSettings):
         )
 
 
+class KafkaSettings(BaseSettings):
+    """
+    For default uses the Postgres
+    """
+
+    BROKER: str
+    PRODUCE_TOPIC: str
+    CONSUME_TOPIC: str
+
+    model_config = SettingsConfigDict(env_prefix="KAFKA_", env_file=".env")
+
+
 class Settings(BaseSettings):
     db: DatabaseSettings = DatabaseSettings()
+    kafka: KafkaSettings = KafkaSettings()
 
 
 settings = Settings()

@@ -1,3 +1,5 @@
+from typing import Sequence
+
 from .models import User
 from .repositories import UsersRepository
 from .schemas import UserCreate
@@ -12,5 +14,5 @@ class UsersService:
     async def create(self, user: UserCreate) -> None:
         return await self.repository.create(User(**user.model_dump()))
 
-    async def get_all(self) -> list[User]:
+    async def get_all(self) -> Sequence[User]:
         return await self.repository.get_all()

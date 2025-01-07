@@ -19,3 +19,5 @@ async def create(
     users_service: Annotated[UsersService, Depends()], user: UserCreate
 ) -> None:
     return await users_service.create(user)
+
+# TODO: create route 
