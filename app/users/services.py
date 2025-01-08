@@ -1,7 +1,8 @@
+import asyncio
 import json
-import random
+import time
 import uuid
-from decimal import Decimal
+from itertools import count
 from typing import Sequence
 
 from .models import User
@@ -11,7 +12,7 @@ from ..core.kafka.consumer import AIOWebConsumer
 from ..core.kafka.producer import AIOWebProducer
 from ..core.lib import main_logger
 
-
+# TODO: add logging
 class UsersService:
     repository = UsersRepository()
 
@@ -37,57 +38,32 @@ class UsersService:
             await producer.send(json.dumps(request.model_dump()).encode("ascii"))
             main_logger.warn('Finished simulates sending messages')
             return None
-        finally:
-            await producer.stop()
-
-    async def simulate_process_messages(self) -> None:
-        """
-            Example action of microservice, receiving and processing messages from Kafka topic.
-            Reads from balances_request topic and writes response to balances_response topic.
-        """
-        main_logger.warn('Started simulates processing messages')
-        producer = AIOWebProducer()
-        consumer = AIOWebConsumer()
-        await consumer.start()
-        await producer.start()
-        try:
-            print(1)
-            async for message in await consumer.get():
-                decoded_message = json.loads(message.value)
-                print(decoded_message)
-                user_data_request = UserDataRequest(**decoded_message)
-                print(user_data_request)
-                for service_type in CryptoServiceType:
-                    response = UserDataResponse(
-                        correlation_id=user_data_request.correlation_id,
-                        produced_by=service_type,
-                        user_id=user_data_request.user_id,
-                        balance=Decimal(random.uniform(1.0, 100.0))
-                    )
-                    await producer.send(json.dumps(response.model_dump()).encode("ascii"))
-                main_logger.warn('Finished simulates processing messages')
-                return None
         except Exception as e:
-            main_logger.error(f'Error in simulates processing messages: {str(e)}')
+            main_logger.error(f'Error in simulates sending messages: {str(e)}')
             raise e
         finally:
-            await consumer.stop()
             await producer.stop()
 
     async def get_all_info(self, user_id: int) -> float:
+        """Consumes messages from balances_response"""
+        # TODO: return async task interaction
         consumer = AIOWebConsumer()
-        producer = AIOWebProducer()
         await consumer.start()
-        await producer.start()
+        # Затем отправляем сообщение
         await self.simulate_send_messages(user_id)
-        await self.simulate_process_messages()
-        balance = Decimal('0.0')
+        balance = 0
+        count_messages_received = 0
+        start_time = time.time()
         try:
-            async for message in await self.__consumer.get():
-                decoded_message = UserDataResponse(**json.loads(message))
-                print(decoded_message)
+            async for message in await consumer.get():
+                decoded_message = UserDataResponse(**json.loads(message.value))
                 balance += decoded_message.balance
-            return float(balance)
+                count_messages_received += 1
+                if time.time() - start_time > 10:
+                    return balance
+            print(balance)
+        except Exception as e:
+            main_logger.error(f'Error in consuming messages in get_all_info: {str(e)}')
+            raise e
         finally:
-            await self.__consumer.stop()
-            await self.__producer.stop()
+            await consumer.stop()

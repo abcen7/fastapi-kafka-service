@@ -6,9 +6,7 @@ import asyncio
 class AIOWebProducer(object):
     def __init__(
             self,
-            produce_topic: settings.kafka.PRODUCE_TOPIC
-                           | settings.kafka.CONSUME_TOPIC
-            = settings.kafka.PRODUCE_TOPIC
+            produce_topic: str = settings.kafka.PRODUCE_TOPIC
     ):
         self.__producer = AIOKafkaProducer(
             bootstrap_servers=settings.kafka.BROKER,
@@ -23,11 +21,7 @@ class AIOWebProducer(object):
         await self.__producer.stop()
 
     async def send(self, value: bytes) -> None:
-        await self.start()
-        try:
-            await self.__producer.send(
-                topic=self.__produce_topic,
-                value=value,
-            )
-        finally:
-            await self.stop()
+        await self.__producer.send(
+            topic=self.__produce_topic,
+            value=value,
+        )

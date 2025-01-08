@@ -1,6 +1,6 @@
 import asyncio
 from pydoc_data.topics import topics
-from typing import Literal
+from typing import Literal, Union
 
 from aiokafka import AIOKafkaConsumer
 
@@ -10,9 +10,7 @@ from app.core import settings
 class AIOWebConsumer(object):
     def __init__(
             self,
-            consume_topic: settings.kafka.PRODUCE_TOPIC
-                           | settings.kafka.CONSUME_TOPIC
-            = settings.kafka.CONSUME_TOPIC
+            consume_topic: str = settings.kafka.CONSUME_TOPIC
     ):
         self.__consume_topic = consume_topic
         self._consumer = AIOKafkaConsumer(

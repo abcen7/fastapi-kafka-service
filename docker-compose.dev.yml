@@ -1,3 +1,5 @@
+version: '3.9'
+
 x-environment: &db-env
   DB_HOST: localhost
   DB_PORT: 5432
@@ -44,8 +46,8 @@ services:
       postgres_db:
         condition: service_healthy
     environment:
+      # TODO: FIX THIS SHIT <<: [*db-env, *app-env]
       <<: *db-env
-      <<: *app-env
 
   zookeeper:
     image: confluentinc/cp-zookeeper:latest

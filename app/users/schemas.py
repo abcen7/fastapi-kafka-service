@@ -40,3 +40,7 @@ class UserDataRequest(BaseModel):
 class UserDataResponse(UserDataRequest):
     produced_by: CryptoServiceType
     balance: Decimal
+
+    @field_serializer('balance')
+    def serialize_balance(self, balance: Decimal, _info):
+        return float(balance)
