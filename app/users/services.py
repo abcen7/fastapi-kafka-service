@@ -30,6 +30,7 @@ class UsersService:
         producer = AIOWebProducer()
         await producer.start()
         try:
+            # TODO: Fix: warn to info (need to create the log config)
             main_logger.warn('Started simulates sending messages')
             request = UserDataRequest(
                 correlation_id=uuid.uuid4(),
@@ -49,8 +50,9 @@ class UsersService:
         # TODO: return async task interaction
         consumer = AIOWebConsumer()
         await consumer.start()
-        # Затем отправляем сообщение
         await self.simulate_send_messages(user_id)
+        count_waiting_messages = len(CryptoServiceType)
+        threshold_time = 5
         balance = 0
         count_messages_received = 0
         start_time = time.time()
@@ -59,9 +61,10 @@ class UsersService:
                 decoded_message = UserDataResponse(**json.loads(message.value))
                 balance += decoded_message.balance
                 count_messages_received += 1
-                if time.time() - start_time > 10:
+                if count_messages_received == count_waiting_messages:
                     return balance
-            print(balance)
+                if time.time() - start_time > threshold_time:
+                    return balance
         except Exception as e:
             main_logger.error(f'Error in consuming messages in get_all_info: {str(e)}')
             raise e
