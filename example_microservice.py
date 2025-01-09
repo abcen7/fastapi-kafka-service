@@ -42,8 +42,8 @@ async def simulate_process_messages() -> None:
         print(f'Error in simulates processing messages: {str(e)}')
         raise e
     finally:
-        await consumer.stop()  # Закрытие консюмера после завершения работы
-        await producer.stop()  # Закрытие продюсера после завершения работы
+        await consumer.stop()
+        await producer.stop()
 
 
 def main():
