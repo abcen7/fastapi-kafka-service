@@ -1,15 +1,16 @@
+from dotenv import load_dotenv
 from pydantic import PostgresDsn, computed_field
 from pydantic_core import MultiHostUrl
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from app.core.lib.databases import Databases, PostgreSQLDrivers
-from dotenv import load_dotenv
 
 """
 TODO: Please, add the settings of all services right here.
 """
 
 load_dotenv()
+
 
 class DatabaseSettings(BaseSettings):
     """For default uses the Postgres"""

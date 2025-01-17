@@ -2,7 +2,7 @@ from decimal import Decimal
 from enum import StrEnum
 from uuid import UUID
 
-from pydantic import BaseModel, field_validator, field_serializer
+from pydantic import BaseModel, field_serializer, field_validator
 
 
 class UserCreate(BaseModel):
@@ -13,6 +13,7 @@ class UserCreate(BaseModel):
 
 
 # Data structures for Kafka
+
 
 class CryptoServiceType(StrEnum):
     ETH = "ETH"
@@ -32,7 +33,7 @@ class UserDataRequest(BaseModel):
     correlation_id: UUID
     user_id: int
 
-    @field_serializer('correlation_id')
+    @field_serializer("correlation_id")
     def serialize_correlation_id(self, correlation_id: UUID, _info):
         return str(correlation_id)
 
@@ -41,6 +42,6 @@ class UserDataResponse(UserDataRequest):
     produced_by: CryptoServiceType
     balance: Decimal
 
-    @field_serializer('balance')
+    @field_serializer("balance")
     def serialize_balance(self, balance: Decimal, _info):
         return float(balance)

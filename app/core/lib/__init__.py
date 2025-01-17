@@ -4,6 +4,6 @@ __all__ = (
     "create_default_fastapi_app",
 )
 
+from .fastapi_builder import create_default_fastapi_app
 from .logger import main_logger
 from .prometheus import setup_monitoring
-from .fastapi_builder import create_default_fastapi_app

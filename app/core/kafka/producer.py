@@ -1,13 +1,12 @@
-from aiokafka import AIOKafkaProducer
-from app.core import settings
 import asyncio
+
+from aiokafka import AIOKafkaProducer
+
+from app.core import settings
 
 
 class AIOWebProducer(object):
-    def __init__(
-            self,
-            produce_topic: str = settings.kafka.PRODUCE_TOPIC
-    ):
+    def __init__(self, produce_topic: str = settings.kafka.PRODUCE_TOPIC):
         self.__producer = AIOKafkaProducer(
             bootstrap_servers=settings.kafka.BROKER,
             loop=asyncio.get_event_loop(),

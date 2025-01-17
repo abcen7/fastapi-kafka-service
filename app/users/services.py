@@ -6,13 +6,13 @@ import uuid
 from decimal import Decimal
 from typing import Sequence
 
-from .models import User
-from .repositories import UsersRepository
-from .schemas import UserCreate, UserDataRequest, UserDataResponse, CryptoServiceType
 from ..core import settings
 from ..core.kafka.consumer import AIOWebConsumer
 from ..core.kafka.producer import AIOWebProducer
 from ..core.lib import main_logger
+from .models import User
+from .repositories import UsersRepository
+from .schemas import CryptoServiceType, UserCreate, UserDataRequest, UserDataResponse
 
 
 # TODO: add logging
@@ -28,7 +28,7 @@ class UsersService:
     @classmethod
     async def simulate_process_messages(cls) -> None:
         """Receives and processes messages from Kafka topic."""
-        main_logger.info('Started simulates processing messages')
+        main_logger.info("Started simulates processing messages")
         consumer = AIOWebConsumer(consume_topic=settings.kafka.PRODUCE_TOPIC)
         producer = AIOWebProducer(produce_topic=settings.kafka.CONSUME_TOPIC)
         await consumer.start()
@@ -38,22 +38,26 @@ class UsersService:
             async for message in await consumer.get():
                 decoded_message = json.loads(message.value)
                 user_data_request = UserDataRequest(**decoded_message)
-                main_logger.info(f"Received message from balances_request >> {user_data_request}")
+                main_logger.info(
+                    f"Received message from balances_request >> {user_data_request}"
+                )
                 for service_type in CryptoServiceType:
                     response = UserDataResponse(
                         correlation_id=user_data_request.correlation_id,
                         produced_by=service_type,
                         user_id=user_data_request.user_id,
-                        balance=Decimal(random.uniform(1.0, 100.0))
+                        balance=Decimal(random.uniform(1.0, 100.0)),
                     )
-                    await producer.send(json.dumps(response.model_dump()).encode("ascii"))
+                    await producer.send(
+                        json.dumps(response.model_dump()).encode("ascii")
+                    )
                     count_sent_messages += 1
                     main_logger.info(f"Sent message to balances_response >> {response}")
                 if count_sent_messages == len(CryptoServiceType):
-                    main_logger.info('Finished simulates processing messages')
+                    main_logger.info("Finished simulates processing messages")
                     return
         except Exception as e:
-            main_logger.error(f'Error in simulates processing messages: {str(e)}')
+            main_logger.error(f"Error in simulates processing messages: {str(e)}")
             raise e
         finally:
             await consumer.stop()
@@ -64,17 +68,17 @@ class UsersService:
         producer = AIOWebProducer()
         await producer.start()
         try:
-            main_logger.info('Started simulates sending messages')
+            main_logger.info("Started simulates sending messages")
             request = UserDataRequest(
                 correlation_id=uuid.uuid4(),
                 user_id=user_id,
             )
             await producer.send(json.dumps(request.model_dump()).encode("ascii"))
             main_logger.info(f"Sent message to balances_request >> {request}")
-            main_logger.info('Finished simulates sending messages')
+            main_logger.info("Finished simulates sending messages")
             return None
         except Exception as e:
-            main_logger.error(f'Error in simulates sending messages: {str(e)}')
+            main_logger.error(f"Error in simulates sending messages: {str(e)}")
             raise e
         finally:
             await producer.stop()
@@ -90,15 +94,15 @@ class UsersService:
         count_messages_received = 0
         start_time = time.time()
 
-        process_task = asyncio.create_task(
-            self.simulate_process_messages()
-        )
+        process_task = asyncio.create_task(self.simulate_process_messages())
         await self.simulate_send_messages(user_id)
         await process_task
         try:
             async for message in await consumer.get():
                 decoded_message = UserDataResponse(**json.loads(message.value))
-                main_logger.info(f"Received message from balances_response >> {decoded_message}")
+                main_logger.info(
+                    f"Received message from balances_response >> {decoded_message}"
+                )
                 balance += decoded_message.balance
                 count_messages_received += 1
                 if count_messages_received == count_waiting_messages:
@@ -106,7 +110,7 @@ class UsersService:
                 if time.time() - start_time > threshold_time:
                     return balance
         except Exception as e:
-            main_logger.error(f'Error in consuming messages in get_all_info: {str(e)}')
+            main_logger.error(f"Error in consuming messages in get_all_info: {str(e)}")
             raise e
         finally:
             await consumer.stop()
