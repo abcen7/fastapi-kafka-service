@@ -24,3 +24,7 @@ class AIOWebConsumer(object):
 
     async def stop(self) -> None:
         await self._consumer.stop()
+
+    async def __aenter__(self):
+        # TODO __aenter__ & __aexit__
+        pass

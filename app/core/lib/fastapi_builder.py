@@ -1,10 +1,11 @@
 from contextlib import asynccontextmanager
-from typing import Any, AsyncIterator, Callable, Never, Optional, TypeVar
+from typing import AsyncIterator, Never, Optional
 
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
-from app.core.lib import main_logger, setup_monitoring
+from .logger import main_logger
+from .prometheus import setup_monitoring
 
 
 def create_default_fastapi_app(
