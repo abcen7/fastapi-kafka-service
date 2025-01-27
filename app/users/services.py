@@ -1,3 +1,4 @@
+import asyncio
 import json
 import time
 import uuid
@@ -45,11 +46,8 @@ class UsersService:
             raise e
 
     async def get_all_info(self, user_id: int) -> float:
-        """Consumes messages from balances_response"""
-        count_waiting_messages = len(
-            CryptoServiceType
-        )  # Count of all requesting services
-        threshold_time = 5  # Threshold time in seconds when we are going to stop wait the messages from requested services
+        count_waiting_messages = len(CryptoServiceType)
+        threshold_time = 2.5
         balance = 0
         count_messages_received = 0
         start_time = time.time()
@@ -62,30 +60,31 @@ class UsersService:
             ) as consumer:
                 await self._send_messages(user_id, request_correlation_id)
 
-                # TODO: need to understand how to exit from async for cycle, when consumer queue is empty
-                if (
-                    count_messages_received < count_waiting_messages
-                    and time.time() - start_time > threshold_time
-                ):
-                    return balance
-
-                async for message in consumer:
-                    decoded_message = UserDataResponse(**json.loads(message.value))
-                    main_logger.info(
-                        f"Received message from balances_response >> {decoded_message}"
-                    )
-                    balance += decoded_message.balance
-                    count_messages_received += 1
-                    if count_messages_received == count_waiting_messages:
-                        return balance
+                while count_messages_received < count_waiting_messages:
                     if time.time() - start_time > threshold_time:
-                        return balance
-                if (
-                    count_messages_received < count_waiting_messages
-                    and time.time() - start_time > threshold_time
-                ):
-                    return balance
-            return balance
+                        break
+
+                    messages = await consumer.getmany(timeout_ms=0.1)
+
+                    if not messages:
+                        continue
+
+                    for partition, message_list in messages.items():
+                        for message in message_list:
+                            decoded_message = UserDataResponse(
+                                **json.loads(message.value)
+                            )
+                            if decoded_message.correlation_id == request_correlation_id:
+                                main_logger.info(
+                                    f"Received message from balances_response >> {decoded_message}"
+                                )
+                                balance += decoded_message.balance
+                                count_messages_received += 1
+
+                                if count_messages_received == count_waiting_messages:
+                                    return balance
+
+                return balance
         except Exception as e:
             main_logger.error(f"Error in consuming messages in get_all_info: {str(e)}")
             raise e

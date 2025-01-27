@@ -1,6 +1,8 @@
 version: '3.9'
 
-x-environment: &db-env
+x-environment: &app-env
+  KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
+  KAFKA_TOPIC: users
   DB_HOST: localhost
   DB_PORT: 5432
   DB_NAME: fst_db
@@ -14,9 +16,6 @@ x-postgres-environment: &postgres-env
   POSTGRES_USER: postgres
   POSTGRES_PASSWORD: postgres
 
-x-application-environment: &app-env
-  KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-  KAFKA_TOPIC=users
 
 services:
   postgres_db:
@@ -37,7 +36,7 @@ services:
   app:
     container_name: fst_app
     build: .
-    command: python manage.py runserver 0.0.0.0:8000
+    command: python3 main.py
     volumes:
       - .:/app
     ports:
@@ -46,8 +45,7 @@ services:
       postgres_db:
         condition: service_healthy
     environment:
-      # TODO: FIX THIS SHIT <<: [*db-env, *app-env]
-      <<: *db-env
+      <<: *app-env
 
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
